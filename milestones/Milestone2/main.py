@@ -1,26 +1,23 @@
-# main.py
-# This file is intended to be a "getting started" code example for students.
-# The code in this file is fully functional.
-# Students are free to edit the code in the milestone 3 folder.
-# Students are NOT allowed to distribute this code without the express permission of the class instructor
-# IMPORTANT: How to set your secret environment variables? read README guidelines.
-
 # imports
 import os
 import discord
 import database as db
+import bot
 
 # environment variables
 token = os.environ['DISCORD_TOKEN']
 server = os.environ['DISCORD_GUILD']
-server_id = os.environ['SERVER_ID']  # optional
-channel_id = os.environ['CHANNEL_ID']  # optional
+db_host = os.environ['DB_HOST']  
+db_user = os.environ['DB_USER'] 
+db_password = os.environ['DB_PASSWORD']
+db_name = os.environ['DB_NAME']
 
+db_instance = db.Database()
+db_conn = db_instance.connect()
 # database connection
-# secret keys related to your database must be updated. Otherwise, it won't work
-db_conn = db.connect()
 # bot events
-client = discord.Client()
+intents = discord.Intents.default()
+client = discord.Client(intents=intents)
 
 
 @client.event
@@ -41,16 +38,12 @@ async def on_message(message):
     :param message: the message from the user. Note that this message is passed automatically by the Discord API
     :return: VOID
     """
-    response = None # will save the response from the bot
     if message.author == client.user:
         return # the message was sent by the bot
-    if message.type is discord.MessageType.new_member:
-        response = "Welcome {}".format(message.author) # a new member joined the server. Welcome him.
-    else:
-        # A message was send by the user.
-        msg = message.content.lower()
-        if "milestone3" in msg:
-            response = "I am alive. Signed: 'your bot'"
+
+    msg = message
+    response = bot.get_response(message)
+        
     if response:
         # bot sends response to the Discord API and the response is show
         # on the channel from your Discord server that triggered this method.
